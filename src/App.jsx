@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { supabase } from './lib/supabase'
 import { G } from './constants/theme'
 import AuthScreen from './pages/AuthScreen'
 import Dashboard from './pages/Dashboard'
@@ -15,12 +16,32 @@ export default function App() {
   const [booting, setBooting] = useState(true)
 
   useEffect(() => {
-    const saved = localStorage.getItem('currentUser')
-    if (saved) {
-      try { setUser(JSON.parse(saved)) } catch {}
-    }
-    setBooting(false)
+    (async () => {
+      // Try localStorage first for instant boot
+      const saved = localStorage.getItem('currentUser')
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved)
+          // Re-fetch fresh user data from Supabase to get latest role etc
+          const { data } = await supabase.from('users').select('*').eq('id', parsed.id).single()
+          if (data) {
+            localStorage.setItem('currentUser', JSON.stringify(data))
+            setUser(data)
+          } else {
+            localStorage.removeItem('currentUser')
+          }
+        } catch {
+          localStorage.removeItem('currentUser')
+        }
+      }
+      setBooting(false)
+    })()
   }, [])
+
+  const handleAuth = (user) => {
+    setUser(user)
+    setPage('dashboard')
+  }
 
   const logout = () => {
     localStorage.removeItem('currentUser')
@@ -37,7 +58,7 @@ export default function App() {
     </div>
   )
 
-  if (!user) return <AuthScreen onAuth={setUser} />
+  if (!user) return <AuthScreen onAuth={handleAuth} />
 
   const pages = {
     dashboard: <Dashboard user={user} />,
@@ -56,7 +77,7 @@ export default function App() {
             <div style={{ width: 32, height: 32, background: G.primary, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: G.white }}>✝</div>
             <span style={{ fontWeight: 800, fontSize: 15, color: G.text }}>Info Desk</span>
           </div>
-          <button onClick={logout} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: G.textLight, fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <button onClick={logout} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: G.textLight, fontFamily: 'inherit' }}>
             Sign out
           </button>
         </div>

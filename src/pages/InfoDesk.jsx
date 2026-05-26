@@ -11,12 +11,15 @@ import Badge from '../components/Badge'
 import Icon from '../components/Icon'
 import { Input, Label, Textarea } from '../components/Input'
 
+const emptyForm = { title: '', content: '', category: '', link: '' }
+
 export default function InfoDesk({ user }) {
   const [items, setItems] = useState([])
   const [search, setSearch] = useState('')
   const [modal, setModal] = useState(false)
+  const [editItem, setEditItem] = useState(null)
   const [qrItem, setQrItem] = useState(null)
-  const [form, setForm] = useState({ title: '', content: '', category: '', link: '' })
+  const [form, setForm] = useState(emptyForm)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
@@ -28,12 +31,26 @@ export default function InfoDesk({ user }) {
     setLoading(false)
   }
 
+  const openAdd = () => { setEditItem(null); setForm(emptyForm); setModal(true) }
+
+  const openEdit = (item) => {
+    setEditItem(item)
+    setForm({ title: item.title, content: item.content, category: item.category || '', link: item.link || '' })
+    setModal(true)
+  }
+
   const save = async () => {
     if (!form.title || !form.content) return
     setSaving(true)
-    const { data, error } = await supabase.from('info_entries').insert({ ...form, created_by: user.name }).select().single()
-    if (!error) setItems(p => [data, ...p])
-    setForm({ title: '', content: '', category: '', link: '' })
+    if (editItem) {
+      const { data, error } = await supabase.from('info_entries').update({ ...form }).eq('id', editItem.id).select().single()
+      if (!error) setItems(p => p.map(i => i.id === editItem.id ? data : i))
+    } else {
+      const { data, error } = await supabase.from('info_entries').insert({ ...form, created_by: user.name }).select().single()
+      if (!error) setItems(p => [data, ...p])
+    }
+    setForm(emptyForm)
+    setEditItem(null)
     setModal(false)
     setSaving(false)
   }
@@ -54,7 +71,7 @@ export default function InfoDesk({ user }) {
       <PageHeader
         title="Information Desk"
         subtitle="Searchable knowledge base"
-        action={user.role === 'admin' && <Button icon="plus" onClick={() => setModal(true)}>Add Entry</Button>}
+        action={<Button icon="plus" onClick={openAdd}>Add Entry</Button>}
       />
 
       <div style={{ position: 'relative', marginBottom: 16 }}>
@@ -94,26 +111,31 @@ export default function InfoDesk({ user }) {
                     Added by {item.created_by} · {fmt(item.created_at)}
                   </div>
                 </div>
-                {user.role === 'admin' && (
-                  <button onClick={() => del(item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: G.red, padding: 4, flexShrink: 0 }}>
-                    <Icon name="trash" size={15} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
+                  <button onClick={() => openEdit(item)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: G.primary, padding: 4 }}>
+                    <Icon name="edit" size={15} />
                   </button>
-                )}
+                  {user.role === 'admin' && (
+                    <button onClick={() => del(item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: G.red, padding: 4 }}>
+                      <Icon name="trash" size={15} />
+                    </button>
+                  )}
+                </div>
               </div>
             </Card>
           ))}
         </div>
       )}
 
-      <Modal open={modal} onClose={() => setModal(false)} title="Add Information Entry">
+      <Modal open={modal} onClose={() => { setModal(false); setEditItem(null); setForm(emptyForm) }} title={editItem ? 'Edit Entry' : 'Add Information Entry'}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div><Label>Title *</Label><Input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="e.g. Sunday Service Time" /></div>
           <div><Label>Category</Label><Input value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} placeholder="e.g. Services, Events, Departments" /></div>
           <div><Label>Content *</Label><Textarea value={form.content} onChange={e => setForm(p => ({ ...p, content: e.target.value }))} placeholder="The information..." /></div>
           <div><Label>Link (optional — generates QR code)</Label><Input value={form.link} onChange={e => setForm(p => ({ ...p, link: e.target.value }))} placeholder="https://..." /></div>
           <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-            <Button onClick={save} disabled={saving} style={{ flex: 1, justifyContent: 'center' }}>{saving ? 'Saving...' : 'Save Entry'}</Button>
-            <Button variant="light" onClick={() => setModal(false)} style={{ flex: 1, justifyContent: 'center' }}>Cancel</Button>
+            <Button onClick={save} disabled={saving} style={{ flex: 1, justifyContent: 'center' }}>{saving ? 'Saving...' : editItem ? 'Save Changes' : 'Save Entry'}</Button>
+            <Button variant="light" onClick={() => { setModal(false); setEditItem(null); setForm(emptyForm) }} style={{ flex: 1, justifyContent: 'center' }}>Cancel</Button>
           </div>
         </div>
       </Modal>

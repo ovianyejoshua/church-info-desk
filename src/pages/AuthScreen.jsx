@@ -18,17 +18,19 @@ export default function AuthScreen({ onAuth }) {
     try {
       if (mode === 'register') {
         if (!form.name || !form.email || !form.password) { setErr('All fields are required.'); setLoading(false); return }
-        const { data: existing } = await supabase.from('users').select('id').eq('email', form.email).single()
+        const { data: existing } = await supabase.from('users').select('id').eq('email', form.email).maybeSingle()
         if (existing) { setErr('Email already registered.'); setLoading(false); return }
         const { count } = await supabase.from('users').select('*', { count: 'exact', head: true })
         const role = count === 0 ? 'admin' : 'user'
         const { data: user, error } = await supabase.from('users').insert({ name: form.name, email: form.email, password: form.password, phone: form.phone, role }).select().single()
         if (error) throw error
+        // Save to both localStorage (fast boot) and Supabase sessions table
+        await supabase.from('sessions').insert({ user_id: user.id, device: navigator.userAgent.slice(0, 100) })
         localStorage.setItem('currentUser', JSON.stringify(user))
         onAuth(user)
       } else {
         if (!form.email || !form.password) { setErr('Enter email and password.'); setLoading(false); return }
-        const { data: user, error } = await supabase.from('users').select('*').eq('email', form.email).eq('password', form.password).single()
+        const { data: user, error } = await supabase.from('users').select('*').eq('email', form.email).eq('password', form.password).maybeSingle()
         if (error || !user) { setErr('Invalid email or password.'); setLoading(false); return }
         localStorage.setItem('currentUser', JSON.stringify(user))
         onAuth(user)
