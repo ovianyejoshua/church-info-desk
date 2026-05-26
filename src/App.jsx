@@ -1,122 +1,68 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect } from 'react'
+import { G } from './constants/theme'
+import AuthScreen from './pages/AuthScreen'
+import Dashboard from './pages/Dashboard'
+import InfoDesk from './pages/InfoDesk'
+import LostFound from './pages/LostFound'
+import Books from './pages/Books'
+import DataCollection from './pages/DataCollection'
+import Team from './pages/Team'
+import BottomNav from './components/BottomNav'
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [user, setUser] = useState(null)
+  const [page, setPage] = useState('dashboard')
+  const [booting, setBooting] = useState(true)
+
+  useEffect(() => {
+    const saved = localStorage.getItem('currentUser')
+    if (saved) {
+      try { setUser(JSON.parse(saved)) } catch {}
+    }
+    setBooting(false)
+  }, [])
+
+  const logout = () => {
+    localStorage.removeItem('currentUser')
+    setUser(null)
+    setPage('dashboard')
+  }
+
+  if (booting) return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: G.bg }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 32, marginBottom: 8 }}>✝</div>
+        <p style={{ color: G.textLight, fontSize: 14 }}>Loading...</p>
+      </div>
+    </div>
+  )
+
+  if (!user) return <AuthScreen onAuth={setUser} />
+
+  const pages = {
+    dashboard: <Dashboard user={user} />,
+    info: <InfoDesk user={user} />,
+    lost: <LostFound user={user} />,
+    books: <Books user={user} />,
+    forms: <DataCollection user={user} />,
+    team: <Team user={user} />,
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div style={{ minHeight: '100vh', background: G.bg, paddingBottom: 80 }}>
+      <div style={{ maxWidth: 540, margin: '0 auto', padding: '20px 16px 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 32, height: 32, background: G.primary, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: G.white }}>✝</div>
+            <span style={{ fontWeight: 800, fontSize: 15, color: G.text }}>Info Desk</span>
+          </div>
+          <button onClick={logout} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: G.textLight, fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 4 }}>
+            Sign out
+          </button>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+        {pages[page]}
+      </div>
+      <BottomNav page={page} setPage={setPage} />
+    </div>
   )
 }
-
-export default App
