@@ -59,7 +59,7 @@ export default function Dashboard({ user, onUserUpdate }) {
           Welcome, {user.name.split(' ')[0]} 👋
         </div>
         <div style={{ background: G.primaryLight }}>
-        {!checkedIn ? (
+          {!checkedIn ? (
           <Button onClick={doCheckIn} disabled={loading} variant="amber" style={{ width: '100%', justifyContent: 'center', padding: '12px' }} icon="checkin">
             {loading ? 'Checking in...' : 'Check In for Duty'}
           </Button>
