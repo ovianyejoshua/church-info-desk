@@ -51,7 +51,7 @@ export default function Dashboard({ user, onUserUpdate }) {
 
   return (
     <div>
-      <div style={{ background: G.primaryLight, borderRadius: 16, padding: '20px 20px', marginBottom: 20, color: G.white }}>
+      <div style={{ background: G.primary, borderRadius: 16, padding: '20px 20px', marginBottom: 20, color: G.white }}>
         <div style={{ fontSize: 13, opacity: 0.7, marginBottom: 4 }}>
           {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
         </div>
@@ -59,7 +59,7 @@ export default function Dashboard({ user, onUserUpdate }) {
           Welcome, {user.name.split(' ')[0]} 👋
         </div>
         {!checkedIn ? (
-          <Button onClick={doCheckIn} disabled={loading} variant="amber" style={{ width: '100%', justifyContent: 'center', padding: '12px' }} icon="checkin">
+          <Button onClick={doCheckIn} disabled={loading} variant="primaryLight" style={{ width: '100%', justifyContent: 'center', padding: '12px' }} icon="checkin">
             {loading ? 'Checking in...' : 'Check In for Duty'}
           </Button>
         ) : (
