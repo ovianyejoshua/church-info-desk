@@ -60,15 +60,15 @@ export default function DataCollection({ user }) {
     setSaving(false)
   }
 
-  const exportCSV = () => {
+  const exportxlsx = () => {
     if (!activeForm || responses.length === 0) return
     const headers = activeForm.fields.map(f => f.label).join(',')
     const rows = responses.map(r => activeForm.fields.map(f => `"${(r.data[f.id] || '').replace(/"/g, '""')}"`).join(','))
-    const csv = ['Submitted At,' + headers, ...responses.map((r, i) => `"${fmtTime(r.created_at)}",` + rows[i])].join('\n')
-    const blob = new Blob([csv], { type: 'text/csv' })
+    const xlsx = ['Submitted At,' + headers, ...responses.map((r, i) => `"${fmtTime(r.created_at)}",` + rows[i])].join('\n')
+    const blob = new Blob([xlsx], { type: 'text/xlsx' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
-    a.download = `${activeForm.name}-responses.csv`
+    a.download = `${activeForm.name}-responses.xlsx`
     a.click()
   }
 
@@ -90,7 +90,7 @@ export default function DataCollection({ user }) {
         </div>
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
           <Button icon="plus" onClick={() => setFillModal(activeForm)}>Add Response</Button>
-          <Button variant="light" icon="download" onClick={exportCSV} disabled={responses.length === 0}>Export CSV</Button>
+          <Button variant="light" icon="download" onClick={exportxlsx} disabled={responses.length === 0}>Export xlsx</Button>
         </div>
         {responses.length === 0 ? (
           <Card style={{ textAlign: 'center', padding: 48 }}><div style={{ fontSize: 36, marginBottom: 10 }}>📝</div><p style={{ color: G.textLight }}>No responses yet.</p></Card>
