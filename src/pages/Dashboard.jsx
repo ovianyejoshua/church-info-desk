@@ -58,12 +58,10 @@ export default function Dashboard({ user, onUserUpdate }) {
         <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 16 }}>
           Welcome, {user.name.split(' ')[0]} 👋
         </div>
-        <div style={{ background: G.primaryLight }}>
-          {!checkedIn ? (
+        {!checkedIn ? (
           <Button onClick={doCheckIn} disabled={loading} variant="amber" style={{ width: '100%', justifyContent: 'center', padding: '12px' }} icon="checkin">
             {loading ? 'Checking in...' : 'Check In for Duty'}
           </Button>
-       </div>
         ) : (
           <div style={{ background: 'rgba(255,255,255,0.15)', borderRadius: 10, padding: '10px 14px', fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
             ✓ You are checked in for today
