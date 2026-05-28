@@ -51,7 +51,7 @@ export default function Dashboard({ user, onUserUpdate }) {
 
   return (
     <div>
-      <div style={{ background: G.primary, borderRadius: 16, padding: '20px 20px', marginBottom: 20, color: G.white }}>
+      <div style={{ background: G.primaryLight, borderRadius: 16, padding: '20px 20px', marginBottom: 20, color: G.white }}>
         <div style={{ fontSize: 13, opacity: 0.7, marginBottom: 4 }}>
           {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
         </div>
