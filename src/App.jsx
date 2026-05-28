@@ -17,12 +17,10 @@ export default function App() {
 
   useEffect(() => {
     (async () => {
-      // Try localStorage first for instant boot
       const saved = localStorage.getItem('currentUser')
       if (saved) {
         try {
           const parsed = JSON.parse(saved)
-          // Re-fetch fresh user data from Supabase to get latest role etc
           const { data } = await supabase.from('users').select('*').eq('id', parsed.id).single()
           if (data) {
             localStorage.setItem('currentUser', JSON.stringify(data))
@@ -50,10 +48,38 @@ export default function App() {
   }
 
   if (booting) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: G.bg }}>
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: G.bg,
+    }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: 32, marginBottom: 8 }}>✝</div>
-        <p style={{ color: G.textLight, fontSize: 14 }}>Loading...</p>
+        {/* Cross mark with warm glow */}
+        <div style={{
+          width: 56,
+          height: 56,
+          background: `linear-gradient(135deg, ${G.primary} 0%, ${G.primaryDark} 100%)`,
+          borderRadius: 16,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 24,
+          color: G.white,
+          margin: '0 auto 14px',
+          boxShadow: '0 8px 24px rgba(26,39,68,0.2)',
+        }}>
+          ✝
+        </div>
+        <p style={{
+          color: G.textLight,
+          fontSize: 13,
+          fontFamily: "'DM Sans', sans-serif",
+          letterSpacing: 0.3,
+        }}>
+          Loading…
+        </p>
       </div>
     </div>
   )
@@ -62,27 +88,90 @@ export default function App() {
 
   const pages = {
     dashboard: <Dashboard user={user} />,
-    info: <InfoDesk user={user} />,
-    lost: <LostFound user={user} />,
-    books: <Books user={user} />,
-    forms: <DataCollection user={user} />,
-    team: <Team user={user} />,
+    info:      <InfoDesk user={user} />,
+    lost:      <LostFound user={user} />,
+    books:     <Books user={user} />,
+    forms:     <DataCollection user={user} />,
+    team:      <Team user={user} />,
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: G.bg, paddingBottom: 80 }}>
+    <div style={{ minHeight: '100vh', background: G.bg, paddingBottom: 88 }}>
       <div style={{ maxWidth: 540, margin: '0 auto', padding: '20px 16px 0' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 32, height: 32, background: G.primary, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: G.white }}>✝</div>
-            <span style={{ fontWeight: 800, fontSize: 15, color: G.text }}>Info Desk</span>
+
+        {/* Top bar */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 24,
+        }}>
+          {/* Logo mark */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              width: 36,
+              height: 36,
+              background: `linear-gradient(135deg, ${G.primary} 0%, ${G.primaryDark} 100%)`,
+              borderRadius: 11,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 17,
+              color: G.white,
+              boxShadow: '0 3px 10px rgba(26,39,68,0.2)',
+              flexShrink: 0,
+            }}>
+              ✝
+            </div>
+            <div>
+              <div style={{
+                fontWeight: 800,
+                fontSize: 15,
+                color: G.text,
+                fontFamily: "'Lora', serif",
+                lineHeight: 1.1,
+              }}>
+                Info Desk
+              </div>
+              {user?.name && (
+                <div style={{
+                  fontSize: 11,
+                  color: G.textLight,
+                  fontFamily: "'DM Sans', sans-serif",
+                  marginTop: 1,
+                }}>
+                  Welcome, {user.name.split(' ')[0]}
+                </div>
+              )}
+            </div>
           </div>
-          <button onClick={logout} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: G.textLight, fontFamily: 'inherit' }}>
+
+          {/* Sign out */}
+          <button
+            onClick={logout}
+            style={{
+              background: G.grayLight,
+              border: `1px solid ${G.border}`,
+              cursor: 'pointer',
+              fontSize: 12,
+              color: G.textLight,
+              fontFamily: "'DM Sans', sans-serif",
+              fontWeight: 600,
+              padding: '6px 12px',
+              borderRadius: 8,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 5,
+            }}
+          >
             Sign out
           </button>
         </div>
+
+        {/* Page content */}
         {pages[page]}
       </div>
+
       <BottomNav page={page} setPage={setPage} />
     </div>
   )
